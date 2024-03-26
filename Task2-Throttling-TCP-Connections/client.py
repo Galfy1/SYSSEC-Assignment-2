@@ -1,10 +1,11 @@
 import socket
 import time
 
-host = "188.177.168.187"
+host = "192.168.0.109"
 port = 12345
 
 def main():
+    print("hello world")
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     s.connect(((host, port)))

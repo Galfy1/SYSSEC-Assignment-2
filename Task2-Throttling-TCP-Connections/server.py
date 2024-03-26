@@ -1,11 +1,12 @@
 
 import socket
 
-host = ''        # all interfaces
+host = ""        # all interfaces
 port = 12345    
 
 
 def main():
+
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((host, port))
 
@@ -15,7 +16,9 @@ def main():
 
     while True:
         data = conn.recv(1024)
-        print("Client Says: " + data)
+        if not data: break
+        print("Client Says: " + data.decode('utf-8'))
+
 
 
 if __name__ == "__main__":

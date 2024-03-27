@@ -1,10 +1,14 @@
 
-from scapy.sendrecv import *
+from scapy.all import *
 
-def tcp_throttling(source_addr, dest_addr, approach = "ACK"):
+def tcp_throttling(source_addr: str, dest_addr: str, approach = "ACK"):
 
-    sniffed_package = sniff(count = 20)
-    sniffed_package[1].show()
+    #ERROR CHECK ADDRESSER
+    print(f"dst host {dest_addr} and src host {source_addr}")
+
+    sniffed_package = sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 30)
+    #sniffed_package = sniff(filter = f"tcp", count = 5)
+    sniffed_package.summary()
 
     if approach == "ACK":
         pass
@@ -15,7 +19,8 @@ def tcp_throttling(source_addr, dest_addr, approach = "ACK"):
 
 
 def main():
-    tcp_throttling(12312312,123123,"ACK")
+    
+    tcp_throttling("192.168.0.116", "192.168.0.128", "ACK")
     
 
 if __name__ == "__main__":

@@ -11,12 +11,12 @@ def tcp_throttling(source_addr: str, dest_addr: str, approach = "ACK"):
 
     sniffed_packages = sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 5)
     #sniffed_package = sniff(filter = f"tcp", count = 5)
-    package_sample = sniffed_packages[0]
-    package_sample1 = sniffed_packages[1]
+    package_sample = sniffed_packages[5] # latest packet
+    #package_sample1 = sniffed_packages[1]
 
 
     print(package_sample[TCP].ack)
-    print(package_sample1[TCP].ack)
+    #print(package_sample1[TCP].ack)
 
 
     if approach == "ACK":

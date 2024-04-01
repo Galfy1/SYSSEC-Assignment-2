@@ -1,8 +1,7 @@
 
 import socket
-from Crypto.Util.Padding import pad, unpad
+from Crypto.Util.Padding import pad
 from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
 import secrets
 
 CLIENT_ADDRESS = "localhost"
@@ -40,8 +39,8 @@ def encrypt_n_send(data: bytes, socket: socket):
     if (len(data_padded) + len(iv)) > ICMP_PAYLOAD_MAX_SIZE:
         raise ValueError(f"ICMP payload size to large at {len(icmp_packet)} bytes!")
 
-    cipher1 = AES.new(SYMMETRIC_KEY, AES.MODE_CBC, iv)  # CBC AES is used for encryption
-    ciphertext = cipher1.encrypt(data_padded)
+    cipher = AES.new(SYMMETRIC_KEY, AES.MODE_CBC, iv)  # CBC AES is used for encryption
+    ciphertext = cipher.encrypt(data_padded)
 
     icmp_packet = create_icmp_header() + iv + ciphertext
 
@@ -49,25 +48,13 @@ def encrypt_n_send(data: bytes, socket: socket):
 
 
 def main():
-    #server_address, port = read_address()
 
-    #s.setsockopt(socket.SOL_IP, socket.IP_HDRINCL, 1)
-    #s.connect((server_address, int(port)))
-    #s.sendall(b"Hello, world")
-    #s.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
-    #packet = b'\x47\x00\x00\x00\x69\x69\x69\x69\x69\x69\x69\x69\x69'  # ICMP HEADER + DATA (FULL HEADER IS REQUIRED)
-    
-    
-    #print(f"IMCP header: {icmp_header}")
-    
     s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
-
-    encrypt_n_send("Lets gOOOOOOO :D".encode('utf-8'), s)
     
-    
-
-
-
-    
+    while True:
+        data = input("Enter your message: ")
+        encrypt_n_send(data.encode('utf-8'), s)
+        print("Message sent!")
+        
 if __name__ == "__main__":
     main()

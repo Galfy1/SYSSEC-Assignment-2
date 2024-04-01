@@ -4,9 +4,6 @@ from Crypto.Util.Padding import pad
 from Crypto.Cipher import AES
 import secrets
 
-CLIENT_ADDRESS = "localhost"
-CLIENT_PORT = 12345
-
 SYMMETRIC_KEY =  bytes.fromhex("7f6aa21dfd3cf2c2cd7135f695cd3e04288703614fdb8bfc07c974d7845ed654") # Shared key
 ICMP_PAYLOAD_MAX_SIZE = 65507 # Bytes
 AES_BLOCK_SIZE = 16 # Bytes
@@ -30,7 +27,7 @@ def create_icmp_header(icmp_type = b"\x2F", icmp_code = b"\x00", icmp_checksum =
 
     return icmp_header
 
-def encrypt_n_send(data: bytes, socket: socket):
+def encrypt_n_send(data: bytes, dest_addr, dport, socket: socket):
 
     
     iv = secrets.token_bytes(AES_BLOCK_SIZE) # Generating a cryptograhical secure IV.
@@ -44,16 +41,17 @@ def encrypt_n_send(data: bytes, socket: socket):
 
     icmp_packet = create_icmp_header() + iv + ciphertext
 
-    socket.sendto(icmp_packet, (CLIENT_ADDRESS, CLIENT_PORT)) 
+    socket.sendto(icmp_packet, (dest_addr, dport)) 
 
 
 def main():
 
+    dest_addr, dport = read_address()
     s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
     
     while True:
         data = input("Enter your message: ")
-        encrypt_n_send(data.encode('utf-8'), s)
+        encrypt_n_send(data.encode('utf-8'), dest_addr, int(dport), s)
         print("Message sent!")
         
 if __name__ == "__main__":

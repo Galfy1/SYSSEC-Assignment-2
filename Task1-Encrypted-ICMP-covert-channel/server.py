@@ -1,6 +1,5 @@
 
 import socket
-import struct
 from Crypto.Util.Padding import unpad
 from Crypto.Cipher import AES
 

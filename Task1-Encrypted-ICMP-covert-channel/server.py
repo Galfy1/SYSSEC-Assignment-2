@@ -3,7 +3,7 @@ import socket
 import struct
 
 SERVER_ADRRESS = "localhost"
-SERVER_PORT = 700
+SERVER_PORT = 12345
 
 
 

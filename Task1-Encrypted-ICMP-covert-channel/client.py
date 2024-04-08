@@ -5,7 +5,8 @@ from Crypto.Cipher import AES
 import secrets
 
 SYMMETRIC_KEY =  bytes.fromhex("7f6aa21dfd3cf2c2cd7135f695cd3e04288703614fdb8bfc07c974d7845ed654") # Shared key
-ICMP_PAYLOAD_MAX_SIZE = 65507 # Bytes
+ICMP_HEADER_LEN = 8 # Bytes
+ICMP_PAYLOAD_MAX_SIZE = 576 - ICMP_HEADER_LEN # Bytes
 AES_BLOCK_SIZE = 16 # Bytes
 
 def read_address():

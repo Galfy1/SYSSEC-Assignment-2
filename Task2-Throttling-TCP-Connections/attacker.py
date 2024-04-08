@@ -18,7 +18,6 @@ def send_3_duplicate_ack(p):
     send(ack_packet, verbose = 0)
     send(ack_packet, verbose = 0)
     send(ack_packet, verbose = 0)
-
     return
 
 

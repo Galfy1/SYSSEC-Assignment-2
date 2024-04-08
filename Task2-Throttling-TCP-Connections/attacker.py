@@ -14,7 +14,7 @@ def send_3_duplicate_ack(p):
 
     ack_packet = IP(src = dst_ip, 
                     dst = src_ip) / TCP(sport = dst_port,    
-                                    dport = src_port, flags = "A", ack = seq_val, seq = ack_val) #/ "Q"#/ "hejsa" # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
+                                    dport = src_port, flags = "A", ack = seq_val, seq = ack_val) # if it was a normal ack packet then ack=seq_val+1 (aka seq value of next expected package). Howerever! we dont +1 to simulate packet loss
     
     send(ack_packet, verbose = 0)
     send(ack_packet, verbose = 0)
@@ -46,7 +46,6 @@ def send_reset(p):
 
 def tcp_throttling(source_addr: str, dest_addr: str, approach = "ACK"):
 
-    #ERROR CHECK ADDRESSER
     print(f"dst host {dest_addr} and src host {source_addr}")
 
     if approach == "ACK":
